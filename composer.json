@@ -1,0 +1,28 @@
+{
+    "name": "nkf/analyzer-logs",
+    "description": "Test project",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Vasiliy Nikiforov",
+            "email": "kaktusv6@gmail.com"
+        }
+    ],
+    "require": {
+        "symfony/dependency-injection": "^6.0",
+        "psr/container": "^2.0",
+        "symfony/filesystem": "^6.0",
+        "symfony/finder": "^6.0",
+        "nesbot/carbon": "^2.71",
+        "symfony/console": "^6.0"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.34",
+        "fakerphp/faker": "^1.23"
+    }
+}
