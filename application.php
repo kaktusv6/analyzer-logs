@@ -1,16 +1,14 @@
 #!/usr/bin/env php
 <?php
 
-require './vendor/autoload.php';
-
-require './src/functions.php';
+include_once './bootstrap.php';
 
 use App\Commands\AnalyzeLogsCommand;
 use Symfony\Component\Console\Application;
 
 $application = new Application();
 
-$container = create();
+$container = (new \App\Container\ContainerInitializer())->init();
 
 $application
     ->add($container->get(AnalyzeLogsCommand::class))
