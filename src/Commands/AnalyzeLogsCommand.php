@@ -31,14 +31,14 @@ final class AnalyzeLogsCommand extends Command
     {
         parent::configure();
 
-        $this->addArgument('u', InputArgument::REQUIRED, 'Минимально допустимый уровень доступности');
-        $this->addArgument('t', InputArgument::REQUIRED, 'Приемлемое время ответа червиса в милисекундах');
+        $this->addArgument('precent', InputArgument::REQUIRED, 'Минимально допустимый уровень доступности');
+        $this->addArgument('allow_time', InputArgument::REQUIRED, 'Приемлемое время ответа червиса в милисекундах');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $precent = (float) $input->getArgument('u');
-        $allowTiming = (float) $input->getArgument('t');
+        $precent = (float) $input->getArgument('precent');
+        $allowTiming = (float) $input->getArgument('allow_time');
 
         $this->collector->createCounter('request_counter');
         $this->collector->createHistogram('response_times_milliseconds', [$allowTiming], ['status']);
@@ -68,7 +68,7 @@ final class AnalyzeLogsCommand extends Command
             }
         }
 
-        if (count($intervals) > 0) {
+        if (null !== $start) {
             $intervals[] = new Interval($start, $end);
         }
 
