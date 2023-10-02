@@ -7,6 +7,11 @@
             "App\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
     "authors": [
         {
             "name": "Vasiliy Nikiforov",
@@ -19,10 +24,13 @@
         "symfony/filesystem": "^6.0",
         "symfony/finder": "^6.0",
         "nesbot/carbon": "^2.71",
-        "symfony/console": "^6.0"
+        "symfony/console": "^6.0",
+        "symfony/yaml": "^6.0",
+        "symfony/config": "^6.0"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.34",
-        "fakerphp/faker": "^1.23"
+        "fakerphp/faker": "^1.23",
+        "phpunit/phpunit": "^9.6"
     }
 }
