@@ -4,13 +4,11 @@ namespace App\ValueObjects;
 
 final class Interval
 {
-    private int $start;
-    private int $end;
-
-    public function __construct(int $start, int $end)
-    {
-        $this->start = $start;
-        $this->end = $end;
+    public function __construct(
+        private int $start,
+        private int $end,
+    ) {
+        $this->assert($start, $end);
     }
 
     public function getStart(): int
@@ -26,5 +24,12 @@ final class Interval
     public function isToOnePoint(): bool
     {
         return $this->getStart() === $this->getEnd();
+    }
+
+    private function assert(int $start, int $end): void
+    {
+        if ($start > $end) {
+            throw new \InvalidArgumentException('Начало интервала не должно быть меньше чем окончание');
+        }
     }
 }
