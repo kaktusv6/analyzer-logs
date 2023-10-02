@@ -7,22 +7,20 @@ final class CollectorInMemory implements ICollector
     private ICounter $counter;
     private IHistogram $histogram;
 
-    public function createCounter(string $name, array $labels = []): ICounter
+    public function createCounter(string $name): ICounter
     {
         $this->counter = new CounterInMemory(
             $name,
-            $labels,
         );
 
         return $this->counter;
     }
 
-    public function createHistogram(string $name, array $buckets = [], array $labels = []): IHistogram
+    public function createHistogram(string $name, array $buckets = []): IHistogram
     {
         $this->histogram = new HistogramInMemory(
             $name,
-            $buckets,
-            $labels
+            $buckets
         );
 
         return $this->histogram;

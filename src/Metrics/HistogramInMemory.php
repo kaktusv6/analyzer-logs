@@ -7,24 +7,20 @@ use Carbon\Carbon;
 final class HistogramInMemory implements IHistogram
 {
     private array $buckets = [];
-    private array $labels = [];
 
     /** @var ICounter[] */
     private array $counters = [];
 
     public function __construct(
-        private string $name = 'default',
-        array $buckets = [10, 20, 30],
-        array $labels = []
+        private string $name = 'default_histogram',
+        array $buckets = [10],
     ) {
         $this->buckets = array_merge($buckets, [PHP_INT_MAX]);
-        $this->labels = array_merge($labels, ['le']);
         $this->name = join('_', [$this->name, 'histogram']);
 
         foreach ($this->buckets as $bucket) {
             $this->counters[$bucket] = new CounterInMemory(
                 join('_', [$this->name, 'bucket']),
-                $labels,
             );
         }
     }

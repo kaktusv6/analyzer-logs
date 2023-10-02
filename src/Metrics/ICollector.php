@@ -4,14 +4,12 @@ namespace App\Metrics;
 
 interface ICollector
 {
-    /** @param string[] $labels */
-    public function createCounter(string $name, array $labels = []): ICounter;
+    public function createCounter(string $name): ICounter;
 
     /**
-     * @param float[]  $buckets
-     * @param string[] $labels
+     * @param float[] $buckets
      */
-    public function createHistogram(string $name, array $buckets = [], array $labels = []): IHistogram;
+    public function createHistogram(string $name, array $buckets = []): IHistogram;
 
     public function getHistogram(): IHistogram;
 

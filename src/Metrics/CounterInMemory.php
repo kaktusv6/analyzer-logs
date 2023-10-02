@@ -6,8 +6,6 @@ use Carbon\Carbon;
 
 final class CounterInMemory implements ICounter
 {
-    private const DEFAULT_LABEL = 'default';
-
     private array $counterMap = [];
 
     /** @var int[] */
@@ -15,7 +13,6 @@ final class CounterInMemory implements ICounter
 
     public function __construct(
         private string $name = 'default_counter',
-        private array $labels = []
     ) {}
 
     public function inc(Carbon $dateTime, array $labels = []): void
@@ -31,7 +28,7 @@ final class CounterInMemory implements ICounter
 
     public function get(array $labels = []): array
     {
-        return $this->counterMap[$this->getKeyByLabels($labels)];
+        return $this->counterMap[$this->getKeyByLabels($labels)] ?? [];
     }
 
     public function getByTime(int $time, array $labels = []): int
@@ -40,7 +37,7 @@ final class CounterInMemory implements ICounter
 
         $result = $map[$time] ?? null;
 
-        $minTime = array_key_first($map);
+        $minTime = array_key_first($map) ?? $time;
 
         while (null === $result && $time >= $minTime) {
             --$time;
