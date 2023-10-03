@@ -3,28 +3,23 @@
 namespace App\UseCases;
 
 use App\Entities\AnalysisRequestAvailableData;
+use App\Metrics\ICollector;
 use Carbon\Carbon;
 
 final class AnalyzerAvailableService
 {
-    public function __construct(
-        private GetterRequestMetrics $getterMetrics,
-    ) {}
-
     /** @return array<int, AnalysisRequestAvailableData> */
-    public function analyze(float $precentAvailable = 90): array
+    public function analyze(ICollector $metricsCollector, float $precentAvailable = 90): array
     {
-        $metrics = $this->getterMetrics->get();
+        $counter = $metricsCollector->getCounter();
+        $histogram = $metricsCollector->getHistogram();
 
-        $counter = $metrics->getCounter();
-        $histogram = $metrics->getHistogram();
-
-        [$fast, $long] = $histogram->getCounters();
+        [$fastRequestsCounter] = $histogram->getCounters();
 
         $result = [];
 
         foreach ($counter->get() as $time => $requestCount) {
-            $fastAndSuccessRequestCount = $fast->getByTime($time, [200]);
+            $fastAndSuccessRequestCount = $fastRequestsCounter->getByTime($time, [200]);
 
             $successRequestCount = $fastAndSuccessRequestCount;
 
