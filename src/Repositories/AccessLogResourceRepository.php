@@ -18,13 +18,15 @@ final class AccessLogResourceRepository implements IAccessLogRepository
         $this->factory = $factory;
     }
 
-    public function getChunksGenerator(int $limit = 5)
+    public function getChunksGenerator(int $limit = 5): \Generator
     {
         while (!$this->reader->feof()) {
             $result = [];
             $logsStr = $this->reader->readLines($limit);
             foreach ($logsStr as $logStr) {
-                $result[] = $this->factory->createFromString($logStr);
+                if ('' !== $logStr) {
+                    $result[] = $this->factory->createFromString($logStr);
+                }
             }
 
             yield $result;

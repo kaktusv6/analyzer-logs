@@ -4,5 +4,5 @@ namespace App\Repositories;
 
 interface IAccessLogRepository
 {
-    public function getChunksGenerator(int $limit = 5);
+    public function getChunksGenerator(int $limit = 5): \Generator;
 }
