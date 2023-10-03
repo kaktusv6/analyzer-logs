@@ -47,13 +47,16 @@ final class AnalyzeLogsCommand extends Command
             $this->accessLogRepository,
             $this->collector
         );
+        $metricsCollector = $getterMetrics->get();
 
-        $analyzer = new AnalyzerAvailableService(
-            $getterMetrics,
+        $analyzer = new AnalyzerAvailableService();
+
+        $mapTimeToAnalyzeData = $analyzer->analyze(
+            $metricsCollector,
+            $precent,
         );
 
-        $mapTimeToAnalyzeData = $analyzer->analyze($precent);
-
+        // TODO вынести создание интервалов в UseCase
         /** @var Interval[] $intervals */
         $intervals = [];
         $start = array_key_first($mapTimeToAnalyzeData);
