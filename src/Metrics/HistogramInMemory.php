@@ -11,9 +11,11 @@ final class HistogramInMemory implements IHistogram
     /** @var ICounter[] */
     private array $counters = [];
 
+    /** @param string[] $labels */
     public function __construct(
         private string $name = 'default_histogram',
         array $buckets = [10],
+        private array $labels = [],
     ) {
         $this->buckets = array_merge($buckets, [PHP_INT_MAX]);
         $this->name = join('_', [$this->name, 'histogram']);
@@ -21,6 +23,7 @@ final class HistogramInMemory implements IHistogram
         foreach ($this->buckets as $bucket) {
             $this->counters[$bucket] = new CounterInMemory(
                 join('_', [$this->name, 'bucket']),
+                $labels,
             );
         }
     }

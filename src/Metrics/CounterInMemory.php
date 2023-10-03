@@ -11,8 +11,10 @@ final class CounterInMemory implements ICounter
     /** @var int[] */
     private array $counters = [];
 
+    /** @param string[] $labels */
     public function __construct(
         private string $name = 'default_counter',
+        private array $labels = [],
     ) {}
 
     public function inc(Carbon $dateTime, array $labels = []): void
