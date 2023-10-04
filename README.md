@@ -8,4 +8,4 @@
 - [x] Написать тесты для IHistogram
 - [ ] Написать Dockerfile и docker-compose
 - [ ] Написать README
-- [ ] Сделать CI\CD GIthub Actions
+- [x] Сделать CI\CD Github Actions
