@@ -7,7 +7,9 @@ final class Reader
     /** @var resource */
     private $resource;
 
-    public function __construct(private string $path) {}
+    public function __construct(private string $path)
+    {
+    }
 
     public function __destruct()
     {

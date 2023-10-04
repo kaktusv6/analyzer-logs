@@ -15,7 +15,8 @@ final class AnalyzerUnavailableService
     public function __construct(
         private ICollector $metricsCollector,
         private CreatorIntervals $creatorIntervals,
-    ) {}
+    ) {
+    }
 
     /** @return UnavailableServiceIntervalInfo[] */
     public function analyze(float $precent, float $time, string $path): array

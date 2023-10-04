@@ -15,7 +15,8 @@ final class CounterInMemory implements ICounter
     public function __construct(
         private string $name = 'default_counter',
         private array $labels = [],
-    ) {}
+    ) {
+    }
 
     public function inc(Carbon $dateTime, array $labels = []): void
     {
