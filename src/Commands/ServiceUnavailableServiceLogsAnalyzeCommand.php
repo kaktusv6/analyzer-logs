@@ -10,10 +10,10 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 #[AsCommand(
-    name: 'analyze:logs',
+    name: 'analyze:unavailable:logs',
     description: 'Команда читает логи запросов к сервису, анализирует и выводит временные интервалы в которых доля отказов была ниже указанной',
 )]
-final class AnalyzeLogsCommand extends Command
+final class ServiceUnavailableServiceLogsAnalyzeCommand extends Command
 {
     public function __construct(
         private AnalyzerUnavailableService $analyzer,
@@ -32,14 +32,14 @@ final class AnalyzeLogsCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $present = (float) $input->getArgument('present');
-        $time = (float) $input->getArgument('time');
+        $present = (float)$input->getArgument('present');
+        $time = (float)$input->getArgument('time');
         $path = $input->getArgument('path') ?? 'php://stdin';
 
         $result = $this->analyzer->analyze($present, $time, $path);
 
         foreach ($result as $info) {
-            $output->writeln((string) $info);
+            $output->writeln((string)$info);
         }
 
         return Command::SUCCESS;
