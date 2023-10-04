@@ -18,11 +18,10 @@ final class AccessLogFaker
     {
         $startedAt = Carbon::now()
             ->setTimezone(\DateTimeZone::ASIA)
-            ->days(-1)
-        ;
+            ->days(-1);
         $rows = 20000;
 
-        $file = fopen(__DIR__.'/../../resources/logs/access.log', 'w');
+        $file = fopen(__DIR__ . '/../../resources/logs/access.log', 'w');
         $i = 0;
         while ($i < $rows) {
             $log = [
@@ -60,6 +59,14 @@ final class AccessLogFaker
     private function httpStatus(): string
     {
         return $this->factory->randomElement([
+            200,
+            200,
+            200,
+            200,
+            200,
+            200,
+            200,
+            200,
             200,
             500,
         ]);
