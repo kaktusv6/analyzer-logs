@@ -2,13 +2,7 @@
 
 namespace App\Commands;
 
-use App\Metrics\ICollector;
-use App\Repositories\IAccessLogRepository;
-use App\UseCases\AnalyzerAvailableService;
-use App\UseCases\CreatorIntervals;
-use App\UseCases\FillerRequestMetrics;
-use App\ValueObjects\Interval;
-use Carbon\Carbon;
+use App\UseCases\AnalyzerUnavailableService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -22,10 +16,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 final class AnalyzeLogsCommand extends Command
 {
     public function __construct(
-        private ICollector $collector,
-        private IAccessLogRepository $accessLogRepository,
-        private CreatorIntervals $creatorIntervals,
-        private AnalyzerAvailableService $analyzer,
+        private AnalyzerUnavailableService $analyzer,
     ) {
         parent::__construct();
     }
@@ -35,47 +26,20 @@ final class AnalyzeLogsCommand extends Command
         parent::configure();
 
         $this->addArgument('present', InputArgument::REQUIRED, 'Минимально допустимый уровень доступности');
-        $this->addArgument('allow_time', InputArgument::REQUIRED, 'Приемлемое время ответа сервиса в миллисекундах');
+        $this->addArgument('time', InputArgument::REQUIRED, 'Приемлемое время ответа сервиса в миллисекундах');
+        $this->addArgument('path', InputArgument::OPTIONAL, 'Путь до файлов с логами. Если не указано, то логи будут считываться из stdin');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $present = (float) $input->getArgument('present');
-        $allowTiming = (float) $input->getArgument('allow_time');
+        $time = (float) $input->getArgument('time');
+        $path = $input->getArgument('path') ?? 'php://stdin';
 
-        $this->collector->createCounter('request_counter');
-        $this->collector->createHistogram('response_times_milliseconds', [$allowTiming], ['status']);
+        $result = $this->analyzer->analyze($present, $time, $path);
 
-        $getterMetrics = new FillerRequestMetrics(
-            $this->accessLogRepository,
-        );
-
-        $metricsCollector = $getterMetrics->byLogs($this->collector);
-
-        $mapTimeToAnalyzeData = $this->analyzer->analyze(
-            $metricsCollector,
-            $present,
-        );
-
-        $intervals = $this->creatorIntervals->byPoints(array_keys($mapTimeToAnalyzeData));
-
-        foreach ($intervals as $interval) {
-            if (!$interval->isToOnePoint()) {
-                $startIntervalData = $mapTimeToAnalyzeData[$interval->getStart()];
-                $endIntervalData = $mapTimeToAnalyzeData[$interval->getEnd()];
-
-                $count = $endIntervalData->getCount() - $startIntervalData->getCount() + 1;
-                $successCount = $endIntervalData->getSuccessCount() - $startIntervalData->getSuccessCount();
-
-                $present = ($successCount / $count) * 100;
-
-                $output->writeln(sprintf(
-                    '%s %s %01.2f',
-                    Carbon::createFromTimestamp($interval->getStart()),
-                    Carbon::createFromTimestamp($interval->getEnd()),
-                    $present
-                ));
-            }
+        foreach ($result as $info) {
+            $output->writeln((string) $info);
         }
 
         return Command::SUCCESS;

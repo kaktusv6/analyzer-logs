@@ -4,7 +4,7 @@ namespace App\Entities;
 
 use Carbon\Carbon;
 
-final class AnalysisRequestAvailableData
+final class UnavailableServiceTimeInfo
 {
     private Carbon $time;
     private float $present;
@@ -16,7 +16,7 @@ final class AnalysisRequestAvailableData
         return $this->present;
     }
 
-    public function setPresent(float $present): AnalysisRequestAvailableData
+    public function setPresent(float $present): UnavailableServiceTimeInfo
     {
         $this->present = $present;
 
@@ -28,7 +28,7 @@ final class AnalysisRequestAvailableData
         return $this->count;
     }
 
-    public function setCount(int $count): AnalysisRequestAvailableData
+    public function setCount(int $count): UnavailableServiceTimeInfo
     {
         $this->count = $count;
 
@@ -40,7 +40,7 @@ final class AnalysisRequestAvailableData
         return $this->successCount;
     }
 
-    public function setSuccessCount(int $successCount): AnalysisRequestAvailableData
+    public function setSuccessCount(int $successCount): UnavailableServiceTimeInfo
     {
         $this->successCount = $successCount;
 
@@ -52,7 +52,7 @@ final class AnalysisRequestAvailableData
         return $this->time;
     }
 
-    public function setTime(Carbon $time): AnalysisRequestAvailableData
+    public function setTime(Carbon $time): UnavailableServiceTimeInfo
     {
         $this->time = $time;
 
