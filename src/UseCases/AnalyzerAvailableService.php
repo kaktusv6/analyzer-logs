@@ -9,7 +9,7 @@ use Carbon\Carbon;
 final class AnalyzerAvailableService
 {
     /** @return array<int, AnalysisRequestAvailableData> */
-    public function analyze(ICollector $metricsCollector, float $precentAvailable = 90): array
+    public function analyze(ICollector $metricsCollector, float $presentAvailable = 90): array
     {
         $counter = $metricsCollector->getCounter();
         $histogram = $metricsCollector->getHistogram();
@@ -23,12 +23,12 @@ final class AnalyzerAvailableService
 
             $successRequestCount = $fastAndSuccessRequestCount;
 
-            $precent = ($successRequestCount / $requestCount) * 100;
+            $present = ($successRequestCount / $requestCount) * 100;
 
-            if ($precent < $precentAvailable) {
+            if ($present < $presentAvailable) {
                 $result[$time] = (new AnalysisRequestAvailableData())
                     ->setCount($requestCount)
-                    ->setPrecent($precent)
+                    ->setPresent($present)
                     ->setSuccessCount($successRequestCount)
                     ->setTime(Carbon::createFromTimestamp($time))
                 ;

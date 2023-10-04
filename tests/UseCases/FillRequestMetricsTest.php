@@ -7,7 +7,7 @@ use App\Metrics\ICollector;
 use App\Metrics\ICounter;
 use App\Metrics\IHistogram;
 use App\Repositories\IAccessLogRepository;
-use App\UseCases\GetterRequestMetrics;
+use App\UseCases\FillerRequestMetrics;
 use Carbon\Carbon;
 use Faker\Factory;
 use Faker\Generator;
@@ -18,7 +18,7 @@ use PHPUnit\Framework\TestCase;
  *
  * @coversNothing
  */
-final class GetterRequestMetricsTest extends TestCase
+final class FillRequestMetricsTest extends TestCase
 {
     private Generator $faker;
 
@@ -93,12 +93,11 @@ final class GetterRequestMetricsTest extends TestCase
             ->willreturn($this->histogram)
         ;
 
-        $getter = new GetterRequestMetrics(
+        $filler = new FillerRequestMetrics(
             $this->repository,
-            $this->collector,
         );
 
-        $collector = $getter->get();
+        $collector = $filler->byLogs($this->collector);
         $this->assertEquals($this->collector, $collector);
     }
 

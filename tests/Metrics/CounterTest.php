@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests;
+namespace Tests\Metrics;
 
 use App\Metrics\CounterInMemory;
 use App\Metrics\ICounter;
@@ -14,14 +14,14 @@ use PHPUnit\Framework\TestCase;
  */
 final class CounterTest extends TestCase
 {
-    private ICounter $counter;
+    private CounterInMemory $counter;
     private Carbon $dateTime;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->counter = new CounterInMemory('test_counter');
+        $this->counter = new CounterInMemory('test_counter', ['label']);
         $this->dateTime = Carbon::now()->days(-1);
     }
 

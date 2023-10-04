@@ -7,18 +7,18 @@ use Carbon\Carbon;
 final class AnalysisRequestAvailableData
 {
     private Carbon $time;
-    private float $precent;
+    private float $present;
     private int $count;
     private int $successCount;
 
-    public function getPrecent(): float
+    public function getPresent(): float
     {
-        return $this->precent;
+        return $this->present;
     }
 
-    public function setPrecent(float $precent): AnalysisRequestAvailableData
+    public function setPresent(float $present): AnalysisRequestAvailableData
     {
-        $this->precent = $precent;
+        $this->present = $present;
 
         return $this;
     }

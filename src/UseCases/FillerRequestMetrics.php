@@ -5,23 +5,22 @@ namespace App\UseCases;
 use App\Metrics\ICollector;
 use App\Repositories\IAccessLogRepository;
 
-final class GetterRequestMetrics
+final class FillerRequestMetrics
 {
     public function __construct(
         private IAccessLogRepository $accessLogRepository,
-        private ICollector $metricsCollector,
     ) {}
 
-    public function get(): ICollector
+    public function byLogs(ICollector $collector): ICollector
     {
         foreach ($this->accessLogRepository->getChunksGenerator(5) as $chunk) {
             /** @var \App\Entities\AccessLog $log */
             foreach ($chunk as $log) {
-                $this->metricsCollector
+                $collector
                     ->getCounter()
                     ->inc($log->getCreatedAt())
                 ;
-                $this->metricsCollector
+                $collector
                     ->getHistogram()
                     ->set(
                         $log->getCreatedAt(),
@@ -34,6 +33,6 @@ final class GetterRequestMetrics
             }
         }
 
-        return $this->metricsCollector;
+        return $collector;
     }
 }

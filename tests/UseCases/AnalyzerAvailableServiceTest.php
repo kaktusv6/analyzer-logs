@@ -1,6 +1,6 @@
 <?php
 
-namespace UseCases;
+namespace Tests\UseCases;
 
 use App\Metrics\ICollector;
 use App\Metrics\ICounter;

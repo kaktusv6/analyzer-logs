@@ -5,7 +5,8 @@ namespace App\Commands;
 use App\Metrics\ICollector;
 use App\Repositories\IAccessLogRepository;
 use App\UseCases\AnalyzerAvailableService;
-use App\UseCases\GetterRequestMetrics;
+use App\UseCases\CreatorIntervals;
+use App\UseCases\FillerRequestMetrics;
 use App\ValueObjects\Interval;
 use Carbon\Carbon;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -23,6 +24,8 @@ final class AnalyzeLogsCommand extends Command
     public function __construct(
         private ICollector $collector,
         private IAccessLogRepository $accessLogRepository,
+        private CreatorIntervals $creatorIntervals,
+        private AnalyzerAvailableService $analyzer,
     ) {
         parent::__construct();
     }
@@ -31,49 +34,30 @@ final class AnalyzeLogsCommand extends Command
     {
         parent::configure();
 
-        $this->addArgument('precent', InputArgument::REQUIRED, 'Минимально допустимый уровень доступности');
-        $this->addArgument('allow_time', InputArgument::REQUIRED, 'Приемлемое время ответа червиса в милисекундах');
+        $this->addArgument('present', InputArgument::REQUIRED, 'Минимально допустимый уровень доступности');
+        $this->addArgument('allow_time', InputArgument::REQUIRED, 'Приемлемое время ответа сервиса в миллисекундах');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $precent = (float) $input->getArgument('precent');
+        $present = (float) $input->getArgument('present');
         $allowTiming = (float) $input->getArgument('allow_time');
 
         $this->collector->createCounter('request_counter');
         $this->collector->createHistogram('response_times_milliseconds', [$allowTiming], ['status']);
 
-        $getterMetrics = new GetterRequestMetrics(
+        $getterMetrics = new FillerRequestMetrics(
             $this->accessLogRepository,
-            $this->collector
         );
-        $metricsCollector = $getterMetrics->get();
 
-        $analyzer = new AnalyzerAvailableService();
+        $metricsCollector = $getterMetrics->byLogs($this->collector);
 
-        $mapTimeToAnalyzeData = $analyzer->analyze(
+        $mapTimeToAnalyzeData = $this->analyzer->analyze(
             $metricsCollector,
-            $precent,
+            $present,
         );
 
-        // TODO вынести создание интервалов в UseCase
-        /** @var Interval[] $intervals */
-        $intervals = [];
-        $start = array_key_first($mapTimeToAnalyzeData);
-        $end = $start;
-        foreach ($mapTimeToAnalyzeData as $time => $_) {
-            if ($time - $end <= 1) {
-                $end = $time;
-            } else {
-                $intervals[] = new Interval($start, $end);
-                $start = $time;
-                $end = $time;
-            }
-        }
-
-        if (null !== $start) {
-            $intervals[] = new Interval($start, $end);
-        }
+        $intervals = $this->creatorIntervals->byPoints(array_keys($mapTimeToAnalyzeData));
 
         foreach ($intervals as $interval) {
             if (!$interval->isToOnePoint()) {
@@ -83,13 +67,13 @@ final class AnalyzeLogsCommand extends Command
                 $count = $endIntervalData->getCount() - $startIntervalData->getCount() + 1;
                 $successCount = $endIntervalData->getSuccessCount() - $startIntervalData->getSuccessCount();
 
-                $precent = ($successCount / $count) * 100;
+                $present = ($successCount / $count) * 100;
 
                 $output->writeln(sprintf(
                     '%s %s %01.2f',
                     Carbon::createFromTimestamp($interval->getStart()),
                     Carbon::createFromTimestamp($interval->getEnd()),
-                    $precent
+                    $present
                 ));
             }
         }
