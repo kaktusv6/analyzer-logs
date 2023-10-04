@@ -1,6 +1,6 @@
 FROM php:8.0-alpine as app
 
-RUN apk update && apk add --no-cache libzip-dev zip libpq-dev postgresql-dev linux-headers tzdata
+RUN apk update && apk add --no-cache libzip-dev zip linux-headers
 
 RUN apk add --virtual build-dependencies --no-cache ${PHPIZE_DEPS}
 
