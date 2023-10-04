@@ -13,7 +13,7 @@ use Carbon\Carbon;
 final class AnalyzerUnavailableService
 {
     public function __construct(
-        private ICollector $metricsCollector,
+        private ICollector       $metricsCollector,
         private CreatorIntervals $creatorIntervals,
     ) {
     }
@@ -23,10 +23,9 @@ final class AnalyzerUnavailableService
     {
         $counter = $this->metricsCollector->createCounter('request_counter');
         $histogram = $this->metricsCollector->createHistogram('response_times_milliseconds', [$time], ['status']);
-
         $this->createFillerRequestMetrics($path)
-            ->byLogs($this->metricsCollector)
-        ;
+            ->byLogs($this->metricsCollector);
+
 
         [$fastRequestsCounter] = $histogram->getCounters();
 
@@ -44,8 +43,7 @@ final class AnalyzerUnavailableService
                     ->setCount($requestCount)
                     ->setPresent($present)
                     ->setSuccessCount($successRequestCount)
-                    ->setTime(Carbon::createFromTimestamp($time))
-                ;
+                    ->setTime(Carbon::createFromTimestamp($time));
             }
         }
 
@@ -66,8 +64,7 @@ final class AnalyzerUnavailableService
                 $result[] = (new UnavailableServiceIntervalInfo())
                     ->setPresent($present)
                     ->setStartedAt(Carbon::createFromTimestamp($interval->getStart()))
-                    ->setEndedAt(Carbon::createFromTimestamp($interval->getEnd()))
-                ;
+                    ->setEndedAt(Carbon::createFromTimestamp($interval->getEnd()));
             }
         }
 
@@ -84,5 +81,21 @@ final class AnalyzerUnavailableService
         return new FillerRequestMetrics(
             $repository,
         );
+    }
+
+    public function analyzeGenerator(float $precent, float $time, string $path)
+    {
+        $filler = new FillerRequestMetrics(
+            new AccessLogResourceRepository(
+                new Reader($path),
+                new AccessLogFactory(),
+            )
+        );
+        foreach ($filler->getMetricsByGenerator($time) as $info) {
+            $infoPrecentAvailable = (($info['rpc'][$time][200] ?? 0) / $info['rpc']['count']) * 100;
+            if ($infoPrecentAvailable < $precent) {
+                yield $info;
+            }
+        }
     }
 }

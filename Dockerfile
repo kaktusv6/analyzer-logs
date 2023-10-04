@@ -1,5 +1,7 @@
 FROM php:8.0-alpine as app
 
+ENV PHP_MEMORY_LIMIT=512M
+
 RUN apk update && apk add --no-cache libzip-dev zip linux-headers
 
 RUN apk add --virtual build-dependencies --no-cache ${PHPIZE_DEPS}

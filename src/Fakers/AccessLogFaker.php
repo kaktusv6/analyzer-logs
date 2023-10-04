@@ -19,7 +19,7 @@ final class AccessLogFaker
         $startedAt = Carbon::now()
             ->setTimezone(\DateTimeZone::ASIA)
             ->days(-1);
-        $rows = 20000;
+        $rows = 10000000;
 
         $file = fopen(__DIR__ . '/../../resources/logs/access.log', 'w');
         $i = 0;
