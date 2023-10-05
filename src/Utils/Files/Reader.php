@@ -2,6 +2,7 @@
 
 namespace App\Utils\Files;
 
+/** Класс-утилита для чтения данных из файла */
 final class Reader
 {
     /** @var resource */
@@ -18,6 +19,7 @@ final class Reader
         }
     }
 
+    /** Метод посимвольного считывания */
     public function readChar(): string|false
     {
         $this->initResource();
@@ -25,6 +27,7 @@ final class Reader
         return fread($this->resource, 1);
     }
 
+    /** Метод считывания строки из файла */
     public function readLine(): string
     {
         $line = '';
@@ -40,7 +43,12 @@ final class Reader
         return $line;
     }
 
-    /** @retrun string[] */
+    /**
+     * Метод считывания нескольких строк из файла сразу
+     *
+     * @param int $count Кол-во считываемых строк
+     * @retrun string[]
+     */
     public function readLines(int $count): array
     {
         $lines = [];
@@ -53,6 +61,7 @@ final class Reader
         return $lines;
     }
 
+    /** Метод проверки, что курсор чтения в конце файоа */
     public function feof(): bool
     {
         return null !== $this->resource && feof($this->resource);

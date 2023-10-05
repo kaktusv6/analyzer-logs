@@ -2,7 +2,8 @@
 
 namespace App\Container;
 
-use App\Commands\ServiceUnavailableServiceLogsAnalyzeCommand;
+use App\Commands\ServiceUnavailableLogsAnalyzeCommand;
+use App\Commands\ServiceUnavailableLogsAnalyzeStreamCommand;
 use App\Metrics\CollectorInMemory;
 use App\Metrics\ICollector;
 use App\UseCases\AnalyzerUnavailableService;
@@ -35,7 +36,10 @@ final class ContainerInitializer
             ->addArgument($container->get(ICollector::class))
             ->addArgument($container->get(CreatorIntervals::class));
 
-        $container->register(ServiceUnavailableServiceLogsAnalyzeCommand::class, ServiceUnavailableServiceLogsAnalyzeCommand::class)
+        $container->register(ServiceUnavailableLogsAnalyzeCommand::class, ServiceUnavailableLogsAnalyzeCommand::class)
+            ->addArgument($container->get(AnalyzerUnavailableService::class));
+
+        $container->register(ServiceUnavailableLogsAnalyzeStreamCommand::class, ServiceUnavailableLogsAnalyzeStreamCommand::class)
             ->addArgument($container->get(AnalyzerUnavailableService::class));
 
         return $container;
