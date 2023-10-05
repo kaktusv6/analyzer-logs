@@ -16,5 +16,3 @@ usermod -u $uid $USER
 groupmod -g $gid $GROUP
 
 chown -R $USER:$GROUP $SRC_DIR
-
-exec php -S localhost:8080

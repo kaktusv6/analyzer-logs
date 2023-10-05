@@ -22,4 +22,4 @@ RUN php composer.phar install
 
 RUN chmod +x docker/deploy.sh
 
-CMD ./docker/deploy.sh
+CMD ./docker/deploy.sh && php -S localhost:8080
