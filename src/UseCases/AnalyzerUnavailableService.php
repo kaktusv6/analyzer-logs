@@ -53,7 +53,7 @@ final class AnalyzerUnavailableService
             $presentAvailable = ($successRequestCount / $requestCount) * 100;
 
             if ($presentAvailable < $present) {
-                $unavailableServiceTimeInfoList[] = (new UnavailableServiceTimeInfo())
+                $unavailableServiceTimeInfoList[$time] = (new UnavailableServiceTimeInfo())
                     ->setCount($requestCount)
                     ->setPresent($presentAvailable)
                     ->setSuccessCount($successRequestCount)
@@ -62,8 +62,7 @@ final class AnalyzerUnavailableService
         }
 
         // Формируем временные интервалы на основании информации недоступности сервиса
-        $points = array_map(fn (UnavailableServiceTimeInfo $info): int => $info->getTime()->unix(), $unavailableServiceTimeInfoList);
-        $intervals = $this->creatorIntervals->byPoints($points);
+        $intervals = $this->creatorIntervals->byPoints(array_keys($unavailableServiceTimeInfoList));
 
         /** @var UnavailableServiceIntervalInfo[] $result */
         $result = [];
