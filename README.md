@@ -39,7 +39,11 @@ make commands
 Пример запуска локально:
 
 ```shell
-php application.php analyze:logs 90 45 ./resources/logs/access.test.log
+php application.php analyze:logs:unavailable:stream 90 45 ./resources/logs/access.test.log
+```
+или
+```shell
+cat ./resources/logs/access.test.log | php application.php analyze:logs:unavailable:stream 90 45
 ```
 
 Пример запуска в Docker образе:
