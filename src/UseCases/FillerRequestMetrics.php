@@ -9,6 +9,7 @@ use App\Metrics\ICollector;
 use App\Repositories\IAccessLogRepository;
 use Carbon\Carbon;
 
+/** UseCAse заполнения метрики по запросам */
 final class FillerRequestMetrics
 {
     public function __construct(
@@ -16,14 +17,19 @@ final class FillerRequestMetrics
     ) {
     }
 
+    /**
+     * Метод заполняет метрику по логам
+     */
     public function byLogs(ICollector $collector): ICollector
     {
         foreach ($this->accessLogRepository->getChunksGenerator() as $chunk) {
             /** @var AccessLog $log */
             foreach ($chunk as $log) {
+                // Фиксируем запрос общем счетчике запросов
                 $collector
                     ->getCounter()
                     ->inc($log->getCreatedAt());
+                // Фиксируем запрос в гистограмме по времени и статусу ответа
                 $collector
                     ->getHistogram()
                     ->set(
@@ -37,37 +43,5 @@ final class FillerRequestMetrics
         }
 
         return $collector;
-    }
-
-    public function getHistogramFlow(float $time): \Generator
-    {
-        $histogram = null;
-        foreach ($this->accessLogRepository->getChunksGenerator() as $chunk) {
-            /** @var AccessLog $log */
-            foreach ($chunk as $log) {
-                if ($histogram === null) {
-                    $histogram = $this->createHistogramFromLog($log, $time);
-                    continue;
-                }
-                if ($histogram->getTime()->unix() !== $log->getCreatedAt()->unix()) {
-                    yield $histogram;
-
-                    $histogram = $this->createHistogramFromLog($log, $time);
-                } else {
-                    $histogram->fix($log->getTimeMilliseconds(), $log->getStatus());
-                }
-            }
-
-        }
-    }
-
-    private function createHistogramFromLog(AccessLog $log, float $time): Histogram
-    {
-        $histogram = new Histogram($log->getCreatedAt(), [
-            new Bucket($time, [200, 500]),
-            new Bucket(PHP_INT_MAX, [200, 500]),
-        ]);
-        $histogram->fix($log->getTimeMilliseconds(), $log->getStatus());
-        return $histogram;
     }
 }

@@ -7,7 +7,13 @@ use App\ValueObjects\Interval;
 /** UseCase для создания интервалов */
 final class CreatorIntervals
 {
-    /** Метод создания интервалов из списка точек */
+    /**
+     * Метод создания интервалов из списка точек.
+     * Если между точками не больше чем в 1, то они являются частью одного интервала.
+     *
+     * @param int[] $points
+     * @return Interval[]
+     */
     public function byPoints(array $points): array
     {
         $result = [];

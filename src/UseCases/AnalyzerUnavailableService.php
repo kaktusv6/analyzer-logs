@@ -7,9 +7,11 @@ use App\Entities\UnavailableServiceIntervalInfo;
 use App\Entities\UnavailableServiceTimeInfo;
 use App\Metrics\ICollector;
 use App\Repositories\AccessLogResourceRepository;
+use App\Repositories\IAccessLogRepository;
 use App\Utils\Files\Reader;
 use Carbon\Carbon;
 
+/** UseCase анализа недоступности сервиса */
 final class AnalyzerUnavailableService
 {
     public function __construct(
@@ -86,15 +88,26 @@ final class AnalyzerUnavailableService
         return $result;
     }
 
-    private function createFillerRequestMetrics(string $path): FillerRequestMetrics
+    private function createLogRepository(string $path): IAccessLogRepository
     {
-        $repository = new AccessLogResourceRepository(
+        return new AccessLogResourceRepository(
             new Reader($path),
             new AccessLogFactory(),
         );
+    }
 
+    private function createFillerRequestMetrics(string $path): FillerRequestMetrics
+    {
         return new FillerRequestMetrics(
-            $repository,
+            $this->createLogRepository($path),
+        );
+    }
+
+    private function createGetterHistogram(string $path): GetterHistogramFromLogs
+    {
+
+        return new GetterHistogramFromLogs(
+            $this->createLogRepository($path),
         );
     }
 
@@ -107,15 +120,15 @@ final class AnalyzerUnavailableService
      */
     public function analyzeFlow(float $present, float $time, string $path): \Generator
     {
-        $filler = $this->createFillerRequestMetrics($path);
-
         $start = null;
         $end = null;
 
+        $successStatus = 200;
+
         // Потоково получаем гистограмму на момент времени
-        foreach ($filler->getHistogramFlow($time) as $histogram) {
+        foreach ($this->createGetterHistogram($path)->getFlow($time) as $histogram) {
             // Вычисляем процент доступности
-            $presentAvailable = ($histogram->getBucket($time)->getCounter(200)->getValue() / $histogram->getCount()) * 100;
+            $presentAvailable = ($histogram->getBucket($time)->getCounter($successStatus)->getValue() / $histogram->getCount()) * 100;
             if ($presentAvailable < $present) {
                 // Начинаем формировать интервал когда сервис был недоступен
                 if ($start === null) {
@@ -124,16 +137,16 @@ final class AnalyzerUnavailableService
                 } elseif ($end->getTime()->diffInSeconds($histogram->getTime()) === 1) {
                     // Складываем прошлые значения гистограммы с текущей если разница по времени была в секунду
                     $histogram->setCount($end->getCount());
-                    $histogram->getBucket($time)->getCounter(200)
+                    $histogram->getBucket($time)->getCounter($successStatus)
                         ->inc(
-                            $end->getBucket($time)->getCounter(200)->getValue()
+                            $end->getBucket($time)->getCounter($successStatus)->getValue()
                         );
 
                     $end = $histogram;
                 } elseif ($start->getTime()->diffInSeconds($end->getTime()) > 0) {
                     // Если следующая гистограмма по времени больше по времени, значит текущий интервал закончился
                     yield (new UnavailableServiceIntervalInfo())
-                        ->setPresent($end->getBucket($time)->getCounter(200)->getValue() / $end->getCount() * 100)
+                        ->setPresent($end->getBucket($time)->getCounter($successStatus)->getValue() / $end->getCount() * 100)
                         ->setStartedAt($start->getTime())
                         ->setEndedAt($end->getTime());
 
