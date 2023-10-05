@@ -3,8 +3,8 @@
 
 include_once './bootstrap.php';
 
-use App\Commands\ServiceUnavailableServiceLogsAnalyzeCommand;
-use App\Commands\ServiceUnavailableServiceLogsAnalyzeGenerateCommand;
+use App\Commands\ServiceUnavailableLogsAnalyzeCommand;
+use App\Commands\ServiceUnavailableLogsAnalyzeStreamCommand;
 use Symfony\Component\Console\Application;
 
 $application = new Application();
@@ -13,8 +13,8 @@ $container = (new \App\Container\ContainerInitializer())->init();
 
 $application
     ->addCommands([
-        $container->get(ServiceUnavailableServiceLogsAnalyzeGenerateCommand::class),
-        $container->get(ServiceUnavailableServiceLogsAnalyzeCommand::class),
+        $container->get(ServiceUnavailableLogsAnalyzeStreamCommand::class),
+        $container->get(ServiceUnavailableLogsAnalyzeCommand::class),
     ]);
 
 $application->run();

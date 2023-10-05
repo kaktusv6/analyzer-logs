@@ -2,7 +2,11 @@
 
 namespace App\Commands;
 
+use App\Entities\Factories\AccessLogFactory;
+use App\Repositories\AccessLogResourceRepository;
 use App\UseCases\AnalyzerUnavailableService;
+use App\UseCases\FillerRequestMetrics;
+use App\Utils\Files\Reader;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -10,10 +14,10 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 #[AsCommand(
-    name: 'analyze:unavailable:logs',
-    description: 'Команда читает логи запросов к сервису, анализирует и выводит временные интервалы в которых доля отказов была ниже указанной',
+    name: 'analyze:logs:unavailable:stream',
+    description: 'Команда потоково считывает логи, анализирует недоступность сервиса и выводит интервалы недоступности сервиса',
 )]
-final class ServiceUnavailableServiceLogsAnalyzeCommand extends Command
+final class ServiceUnavailableLogsAnalyzeStreamCommand extends Command
 {
     public function __construct(
         private AnalyzerUnavailableService $analyzer,
@@ -36,10 +40,8 @@ final class ServiceUnavailableServiceLogsAnalyzeCommand extends Command
         $time = (float)$input->getArgument('time');
         $path = $input->getArgument('path') ?? 'php://stdin';
 
-        $result = $this->analyzer->analyze($present, $time, $path);
-
-        foreach ($result as $info) {
-            $output->writeln((string)$info);
+        foreach ($this->analyzer->analyzeFlow($present, $time, $path) as $histogram) {
+            $output->writeln((string)$histogram);
         }
 
         return Command::SUCCESS;

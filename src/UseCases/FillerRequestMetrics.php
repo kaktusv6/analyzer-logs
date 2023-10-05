@@ -3,8 +3,11 @@
 namespace App\UseCases;
 
 use App\Entities\AccessLog;
+use App\Entities\Bucket;
+use App\Entities\Histogram;
 use App\Metrics\ICollector;
 use App\Repositories\IAccessLogRepository;
+use Carbon\Carbon;
 
 final class FillerRequestMetrics
 {
@@ -36,53 +39,35 @@ final class FillerRequestMetrics
         return $collector;
     }
 
-    public function getMetricsByGenerator(float $time): \Generator
+    public function getHistogramFlow(float $time): \Generator
     {
-        $requestsInfo = null;
-
+        $histogram = null;
         foreach ($this->accessLogRepository->getChunksGenerator() as $chunk) {
             /** @var AccessLog $log */
             foreach ($chunk as $log) {
-                if ($requestsInfo === null) {
-                    $rpc = [
-                        'count' => 1,
-                    ];
-                    $bucketKey = $log->getTimeMilliseconds() <= $time ? $time : PHP_INT_MAX;
-                    $rpc[$bucketKey][$log->getStatus()] = 1;
-
-                    $requestsInfo = [
-                        'time' => $log->getCreatedAt()->unix(),
-                        'rpc' => $rpc,
-                    ];
+                if ($histogram === null) {
+                    $histogram = $this->createHistogramFromLog($log, $time);
+                    continue;
                 }
-                if ($requestsInfo['time'] !== $log->getCreatedAt()->unix()) {
-                    yield $requestsInfo;
-                    $rpc = [
-                        'count' => 1,
-                    ];
-                    $bucketKey = $log->getTimeMilliseconds() <= $time ? $time : PHP_INT_MAX;
-                    $rpc[$bucketKey][$log->getStatus()] = 1;
+                if ($histogram->getTime()->unix() !== $log->getCreatedAt()->unix()) {
+                    yield $histogram;
 
-                    $requestsInfo = [
-                        'time' => $log->getCreatedAt()->unix(),
-                        'rpc' => $rpc,
-                    ];
+                    $histogram = $this->createHistogramFromLog($log, $time);
                 } else {
-                    $requestsInfo['rpc']['count']++;
-
-                    $bucketKey = $log->getTimeMilliseconds() <= $time ? $time : PHP_INT_MAX;
-
-                    $bucket = $requestsInfo['rpc'][$bucketKey] ?? [];
-
-                    if (array_key_exists($log->getStatus(), $bucket)) {
-                        $bucket[$log->getStatus()]++;
-                    } else {
-                        $bucket[$log->getStatus()] = 1;
-                    }
-
-                    $requestsInfo['rpc'][$bucketKey] = $bucket;
+                    $histogram->fix($log->getTimeMilliseconds(), $log->getStatus());
                 }
             }
+
         }
+    }
+
+    private function createHistogramFromLog(AccessLog $log, float $time): Histogram
+    {
+        $histogram = new Histogram($log->getCreatedAt(), [
+            new Bucket($time, [200, 500]),
+            new Bucket(PHP_INT_MAX, [200, 500]),
+        ]);
+        $histogram->fix($log->getTimeMilliseconds(), $log->getStatus());
+        return $histogram;
     }
 }
